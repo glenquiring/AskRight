@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCPA Meeting Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; 
+            padding: 10px; 
+        }
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .org-selector { 
+            padding: 15px; 
+            background: #f8f9fa; 
+        }
+        .org-selector select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .custom-org {
+            display: none;
+            margin-top: 10px;
+        }
+        .custom-org input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .tabs { 
+            display: flex; 
+            background: #f8f9fa; 
+        }
+        .tab { 
+            flex: 1; 
+            padding: 15px 5px; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 11px;
+        }
+        .tab.active { 
+            background: white; 
+            color: #2c3e50; 
+            font-weight: bold;
+        }
+        .content { 
+            display: none; 
+            padding: 20px; 
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .content.active { 
+            display: block; 
+        }
+        .question { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border-left: 4px solid #3498db;
+        }
+        .question-text { 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+        }
+        .question-purpose { 
+            font-size: 12px; 
+            color: #666; 
+            font-style: italic;
+        }
+        .notes { 
+            width: 100%; 
+            height: 100px; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            resize: vertical;
+        }
+        .btn { 
+            background: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 10px 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        .claude-btn { 
+            background: #e74c3c; 
+            width: 100%;
+            margin: 10px 0;
+        }
+        .edit-form {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .edit-form textarea {
+            width: 100%;
+            height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            resize: vertical;
+        }
+        .edit-form input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .delete-btn {
+            background: #e74c3c;
+            font-size: 10px;
+            padding: 5px 10px;
+        }
+        .add-btn {
+            background: #27ae60;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .save-all-btn {
+            background: #27ae60;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PCPA Meeting Questions</h1>
+            <p>Strategic questions for donor development</p>
+        </div>
+        
+        <div class="org-selector">
+            <label>Meeting with:</label>
+            <select id="orgSelect">
+                <option value="YMCA">YMCA</option>
+                <option value="Rotary Club">Rotary Club</option>
+                <option value="Chamber of Commerce">Chamber of Commerce</option>
+                <option value="Hospital Foundation">Hospital Foundation</option>
+                <option value="School District">School District</option>
+                <option value="Bank">Local Bank</option>
+                <option value="Restaurant">Restaurant</option>
+                <option value="Real Estate">Real Estate Agency</option>
+                <option value="Custom">Custom Organization</option>
+            </select>
+            <div class="custom-org" id="customOrgDiv">
+                <input type="text" id="customOrgInput" placeholder="Enter organization name...">
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('community')">Community</button>
+            <button class="tab" onclick="showTab('prospect')">Prospect</button>
+            <button class="tab" onclick="showTab('sponsor')">Sponsor</button>
+            <button class="tab" onclick="showTab('rules')">Rules</button>
+            <button class="tab" onclick="showTab('notes')">Notes</button>
+            <button class="tab" onclick="showTab('edit')">✏️ Edit</button>
+        </div>
+        
+        <div id="community" class="content active">
+            <h3>Community Connection Questions</h3>
+            <div id="communityQuestions"></div>
+        </div>
+        
+        <div id="prospect" class="content">
+            <h3>Prospect Questions</h3>
+            <div id="prospectQuestions"></div>
+        </div>
+        
+        <div id="sponsor" class="content">
+            <h3>Corporate Sponsor Questions</h3>
+            <div id="sponsorQuestions"></div>
+        </div>
+        
+        <div id="rules" class="content">
+            <h3>Critical Factor Rules</h3>
+            
+            <div style="background: linear-gradient(135deg, #e8f4fd 0%, #f1f8ff 100%); border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #d1ecf1;">
+                <div style="font-size: 13px; margin-bottom: 8px; color: #2c3e50;"><span style="font-weight: bold; color: #3498db;">Rule 1:</span> Conversion Test - Every activity must convert audiences to donors</div>
+                <div style="font-size: 13px; margin-bottom: 8px; color: #2c3e50;"><span style="font-weight: bold; color: #3498db;">Rule 2:</span> Business System - Build repeatable processes, not just relationships</div>
+                <div style="font-size: 13px; margin-bottom: 8px; color: #2c3e50;"><span style="font-weight: bold; color: #3498db;">Rule 3:</span> Relationship Depth - Increase lifetime value capacity</div>
+                <div style="font-size: 13px; margin-bottom: 8px; color: #2c3e50;"><span style="font-weight: bold; color: #3498db;">Rule 4:</span> Resource Allocation - 80% time on critical factors</div>
+                <div style="font-size: 13px; margin-bottom: 8px; color: #2c3e50;"><span style="font-weight: bold; color: #3498db;">Rule 5:</span> Proof Rule - Measurable progress within 90 days</div>
+            </div>
+            
+            <div class="question">
+                <div class="question-text">Strategic Framework:</div>
+                <div class="question-purpose">"Convert theatergoers into committed donors through student impact stories and donor benefits, while engaging businesses as partners in Central Coast economic development, leveraging PCPA's unique role as both professional theater and talent incubator."</div>
+            </div>
+            
+            <div class="question">
+                <div class="question-text">Listen For:</div>
+                <div class="question-purpose">
+                    • Capacity indicators (other giving, business success)<br>
+                    • Engagement preferences (recognition, events, impact)<br>
+                    • Motivation drivers (benefits, mission, business value)<br>
+                    • Decision-making process<br>
+                    • Network connections and referral potential
+                </div>
+            </div>
+        </div>
+        
+        <div id="notes" class="content">
+            <h3>Meeting Notes & Claude AI</h3>
+            <button class="btn claude-btn" onclick="generatePrompt()">🤖 Generate Claude AI Prompt</button>
+            <div id="promptSection" style="display:none; margin:10px 0;">
+                <textarea id="claudePrompt" class="notes" style="height:150px;" readonly></textarea>
+                <button class="btn" onclick="copyPrompt()">📋 Copy Prompt</button>
+                <button class="btn" onclick="window.open('https://claude.ai', '_blank')">🚀 Open Claude</button>
+            </div>
+            <textarea id="meetingNotes" class="notes" placeholder="Meeting notes:
+• Their motivation pathway:
+• Capacity indicators:
+• Engagement preferences:
+• Next steps:"></textarea>
+            <button class="btn" onclick="saveNotes()">💾 Save Notes</button>
+        </div>
+        
+        <div id="edit" class="content">
+            <h3>Edit Questions</h3>
+            
+            <h4>Community Questions</h4>
+            <div id="communityEdit"></div>
+            <button class="btn add-btn" onclick="addQuestion('community')">+ Add Community Question</button>
+            
+            <h4>Prospect Questions</h4>
+            <div id="prospectEdit"></div>
+            <button class="btn add-btn" onclick="addQuestion('prospect')">+ Add Prospect Question</button>
+            
+            <h4>Sponsor Questions</h4>
+            <div id="sponsorEdit"></div>
+            <button class="btn add-btn" onclick="addQuestion('sponsor')">+ Add Sponsor Question</button>
+            
+            <button class="btn save-all-btn" onclick="saveAllQuestions()">💾 Save All Changes</button>
+        </div>
+    </div>
+
+    <script>
+        let currentOrg = 'YMCA';
+        let questions = {
+            community: [
+                { text: "What's the most rewarding part of your work at the {org}?", purpose: "Opens with genuine interest, gets them talking about passion and impact" },
+                { text: "What changes have you seen in the community since you've been with the {org}?", purpose: "Values their community perspective and expertise" },
+                { text: "How do you see the arts fitting into building stronger communities?", purpose: "Bridges their work to yours naturally" },
+                { text: "The {org} and PCPA both develop people. What opportunities do you see for our organizations to support each other's missions?", purpose: "Creates peer-to-peer organizational thinking" },
+                { text: "If we could create something together that would benefit both our communities, what would get you most excited?", purpose: "Opens collaborative possibilities" }
+            ],
+            prospect: [
+                { text: "What brings you to our shows? Is it the professional productions, watching our conservatory students develop, or something else entirely?", purpose: "Determines motivation pathway (benefits vs. student impact vs. business value)" },
+                { text: "When you think about supporting organizations in our community, what kind of impact matters most to you personally?", purpose: "Reveals giving capacity, interests, and readiness" },
+                { text: "How do you typically like to be recognized when you support something you care about?", purpose: "Intelligence on stewardship preferences and status motivations" },
+                { text: "What other organizations or causes do you currently support, and what drew you to them?", purpose: "Capacity assessment and engagement level preferences" },
+                { text: "If PCPA created the perfect partnership opportunity for someone like you, what would that look like?", purpose: "Designs their ideal engagement while creating repeatable model" }
+            ],
+            sponsor: [
+                { text: "What's driving your business growth strategy right now?", purpose: "Identifies customer acquisition and business development needs" },
+                { text: "How do you currently connect with potential customers in our community?", purpose: "Reveals marketing challenges and audience access needs" },
+                { text: "What kind of community partnerships have worked best for your business?", purpose: "Understands their partnership experience and preferences" },
+                { text: "When you think about your ideal customers, what do they value most?", purpose: "Aligns PCPA audience with their target market" },
+                { text: "If you could design the perfect community partnership that drove real business results, what would that include?", purpose: "Creates custom sponsorship package framework" }
+            ]
+        };
+        
+        // Load saved questions
+        function loadQuestions() {
+            const saved = localStorage.getItem('pcpaQuestions');
+            if (saved) {
+                questions = JSON.parse(saved);
+            }
+            renderAllQuestions();
+        }
+        
+        // Render all questions in display and edit modes
+        function renderAllQuestions() {
+            ['community', 'prospect', 'sponsor'].forEach(type => {
+                renderDisplayQuestions(type);
+                renderEditQuestions(type);
+            });
+        }
+        
+        // Render questions for display tabs
+        function renderDisplayQuestions(type) {
+            const container = document.getElementById(type + 'Questions');
+            if (!container) return;
+            
+            const questionsHtml = questions[type].map((q, index) => {
+                const questionText = q.text.replace(/{org}/g, currentOrg);
+                return `
+                    <div class="question">
+                        <div class="question-text">"${questionText}"</div>
+                        <div class="question-purpose">${q.purpose}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = questionsHtml;
+        }
+        
+        // Render questions for edit tab
+        function renderEditQuestions(type) {
+            const container = document.getElementById(type + 'Edit');
+            if (!container) return;
+            
+            const formsHtml = questions[type].map((q, index) => `
+                <div class="edit-form">
+                    <textarea id="${type}_text_${index}" placeholder="Question text (use {org} for organization name)">${q.text}</textarea>
+                    <input type="text" id="${type}_purpose_${index}" placeholder="Purpose/rationale" value="${q.purpose}">
+                    <button class="btn delete-btn" onclick="deleteQuestion('${type}', ${index})">Delete</button>
+                </div>
+            `).join('');
+            
+            container.innerHTML = formsHtml;
+        }
+        
+        // Show/hide tabs
+        function showTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected content
+            const content = document.getElementById(tabName);
+            if (content) {
+                content.classList.add('active');
+            }
+            
+            // Activate selected tab
+            event.target.classList.add('active');
+            
+            // If edit tab, render edit forms
+            if (tabName === 'edit') {
+                setTimeout(() => {
+                    renderEditQuestions('community');
+                    renderEditQuestions('prospect');
+                    renderEditQuestions('sponsor');
+                }, 50);
+            }
+        }
+        
+        // Add new question
+        function addQuestion(type) {
+            questions[type].push({
+                text: "New question for {org}?",
+                purpose: "Add the purpose here"
+            });
+            renderEditQuestions(type);
+        }
+        
+        // Delete question
+        function deleteQuestion(type, index) {
+            if (confirm('Delete this question?')) {
+                questions[type].splice(index, 1);
+                renderEditQuestions(type);
+                renderDisplayQuestions(type);
+            }
+        }
+        
+        // Save all questions
+        function saveAllQuestions() {
+            // Update questions from edit forms
+            ['community', 'prospect', 'sponsor'].forEach(type => {
+                questions[type].forEach((q, index) => {
+                    const textEl = document.getElementById(`${type}_text_${index}`);
+                    const purposeEl = document.getElementById(`${type}_purpose_${index}`);
+                    if (textEl && purposeEl) {
+                        q.text = textEl.value;
+                        q.purpose = purposeEl.value;
+                    }
+                });
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('pcpaQuestions', JSON.stringify(questions));
+            
+            // Re-render all questions
+            renderAllQuestions();
+            
+            alert('All questions saved!');
+        }
+        
+        // Organization selection
+        document.getElementById('orgSelect').addEventListener('change', function() {
+            const customDiv = document.getElementById('customOrgDiv');
+            const customInput = document.getElementById('customOrgInput');
+            
+            if (this.value === 'Custom') {
+                customDiv.style.display = 'block';
+                customInput.focus();
+                currentOrg = customInput.value || 'Custom Organization';
+            } else {
+                customDiv.style.display = 'none';
+                currentOrg = this.value;
+            }
+            
+            renderAllQuestions();
+        });
+        
+        // Custom organization input
+        document.getElementById('customOrgInput').addEventListener('input', function() {
+            currentOrg = this.value || 'Custom Organization';
+            renderAllQuestions();
+        });
+        
+        // Generate Claude prompt
+        function generatePrompt() {
+            const prompt = `I am Glen Quiring, CFRE, Director of Development for PCPA. Meeting with: ${currentOrg}. Generate 5 strategic questions following my Critical Factor Rules.
+
+CRITICAL FACTOR RULES:
+1. Conversion Test: Every activity must convert audiences to donors
+2. Business System Test: Build repeatable processes, not just individual relationships
+3. Relationship Depth Test: Increase lifetime value capacity, not just immediate gifts
+4. Resource Allocation: 80% time on critical factors
+5. Proof Rule: Measurable progress within 90 days
+
+PCPA STRATEGIC FRAMEWORK:
+"Convert theatergoers into committed donors through student impact stories and donor benefits, while engaging businesses as partners in Central Coast economic development, leveraging PCPA's unique role as both professional theater and talent incubator."
+
+Generate 5 strategic questions for ${currentOrg} that follow these rules and create systematic processes I can repeat.`;
+
+            document.getElementById('claudePrompt').value = prompt;
+            document.getElementById('promptSection').style.display = 'block';
+        }
+        
+        // Copy prompt
+        function copyPrompt() {
+            const prompt = document.getElementById('claudePrompt');
+            prompt.select();
+            document.execCommand('copy');
+            alert('Prompt copied to clipboard!');
+        }
+        
+        // Save notes
+        function saveNotes() {
+            const notes = document.getElementById('meetingNotes').value;
+            const timestamp = new Date().toLocaleString();
+            
+            const savedNotes = JSON.parse(localStorage.getItem('pcpaNotes') || '[]');
+            savedNotes.unshift({
+                timestamp: timestamp,
+                org: currentOrg,
+                content: notes
+            });
+            
+            if (savedNotes.length > 10) {
+                savedNotes.splice(10);
+            }
+            
+            localStorage.setItem('pcpaNotes', JSON.stringify(savedNotes));
+            alert('Notes saved!');
+        }
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuestions();
+            
+            const savedNotes = JSON.parse(localStorage.getItem('pcpaNotes') || '[]');
+            if (savedNotes.length > 0) {
+                document.getElementById('meetingNotes').value = savedNotes[0].content;
+            }
+        });
+    </script>
+</body>
+</html>
